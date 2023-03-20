@@ -1,27 +1,14 @@
 from typing import Union
-import os
-from ultralytics import YOLO
+from .base import BaseBin
 
 
-class Converter:
+class Converter(BaseBin):
     def __init__(self,
                  version: str = '8',
-                 size: str = 's'):
-        self.version = version
-        self.size = size
-        self.model = None
+                 size: str = 's',
+                 dataset_name: str = 'timelapse'):
+        super().__init__(version=version, size=size, dataset_name=dataset_name)
         self.load_best_model()
-
-    def load_best_model(self):
-        models_dir = os.path.join('yolo_models')
-        if os.path.exists(os.path.join(models_dir, 'fine_tuned')):
-            self.model = YOLO(os.path.join(models_dir,
-                                           'fine_tuned',
-                                           'yolov{}{}'.format(self.version, self.size),
-                                           'best.pt'))
-        else:
-            raise ValueError('Best model not available for version \'{}\' and size \'{}\''.format(self.version,
-                                                                                                  self.size))
 
     def convert_to(self, framework: Union[str, list[str]] = 'onnx'):
         if isinstance(framework, str):
