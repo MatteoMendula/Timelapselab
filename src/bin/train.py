@@ -47,7 +47,10 @@ class Trainer:
 
     def on_train_epoch_end(self, model):
         models_dir = os.path.join('yolo_models')
-        fine_tuned_dir = os.path.join(models_dir, 'fine_tuned', 'yolov{}{}'.format(self.version, self.size))
+        fine_tuned_dir = os.path.join(models_dir,
+                                      'fine_tuned',
+                                      os.path.basename(self.dataset).split('\\')[-1].split('.')[0],
+                                      'yolov{}{}'.format(self.version, self.size))
         if not os.path.exists(fine_tuned_dir):
             os.makedirs(fine_tuned_dir)
             shutil.copyfile(os.path.join(self.model.save_dir, 'weights', 'best.pt'),
