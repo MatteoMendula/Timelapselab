@@ -3,6 +3,7 @@ yolo_models
 datasets
 documents
 *.jpg
+.DS_Store
 
 .idea
 
