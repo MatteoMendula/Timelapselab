@@ -27,11 +27,12 @@ class Trainer(BaseBin):
 
     def run(self,
             batch_size: int = 64,
-            img_size: int = 640,
+            img_size: Union[int, list[int]] = 640,
             epochs: int = 10,
             device: Union[str, int, list[int]] = 0,
             val: bool = True) -> YOLO:
         self.model.add_callback("on_train_epoch_end", self.on_train_epoch_end)
+        print('\n\nimg_size: {}\n\n'.format(img_size))
         self.model.train(data=self.dataset_path,
                          batch=batch_size,
                          imgsz=img_size,
