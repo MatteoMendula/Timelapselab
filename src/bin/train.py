@@ -3,6 +3,7 @@ import os
 import shutil
 from ultralytics import YOLO
 from .base import BaseBin
+from src.utils import uppath
 
 
 class Trainer(BaseBin):
@@ -53,8 +54,8 @@ class Trainer(BaseBin):
                                       'yolov{}{}'.format(self.version, self.size))
         if not os.path.exists(fine_tuned_dir):
             os.makedirs(fine_tuned_dir)
-            shutil.copyfile(os.path.join(self.model.save_dir, 'weights', 'best.pt'),
+            shutil.copyfile(os.path.join(uppath(self.model.ckpt_path, 1), 'best.pt'),
                             os.path.join(fine_tuned_dir, 'best.pt'))
-            shutil.copyfile(os.path.join(self.model.save_dir, 'weights', 'last.pt'),
+            shutil.copyfile(os.path.join(uppath(self.model.ckpt_path, 1), 'last.pt'),
                             os.path.join(fine_tuned_dir, 'last.pt'))
 

@@ -1,3 +1,5 @@
+from .paths import *
+
 import argparse
 
 
