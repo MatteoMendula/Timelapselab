@@ -30,7 +30,7 @@ class Trainer(BaseBin):
             epochs: int = 10,
             device: Union[str, int, list[int]] = 0,
             val: bool = True) -> YOLO:
-        self.model.add_callback("on_train_epoch_end", self.on_train_epoch_end)
+        self.model.add_callback("on_fit_epoch_end", self.on_fit_epoch_end)
         print('\n\nimg_size: {}\n\n'.format(img_size))
         self.model.train(data=self.dataset_path,
                          batch=batch_size,
@@ -47,7 +47,7 @@ class Trainer(BaseBin):
     def get_model(self) -> YOLO:
         return self.model
 
-    def on_train_epoch_end(self, model):
+    def on_fit_epoch_end(self, model):
         models_dir = os.path.join('yolo_models')
         fine_tuned_dir = os.path.join(models_dir,
                                       'fine_tuned',
@@ -56,9 +56,9 @@ class Trainer(BaseBin):
         if not os.path.exists(fine_tuned_dir):
             os.makedirs(fine_tuned_dir)
         print('Copying best and last models to yolo_models folder...')
-        shutil.copyfile(os.path.join(self.model.trainer.save_dir, 'best.pt'),
+        shutil.copyfile(os.path.join(self.model.trainer.save_dir, 'weights', 'best.pt'),
                         os.path.join(fine_tuned_dir, 'best.pt'))
-        shutil.copyfile(os.path.join(self.model.trainer.save_dir, 'last.pt'),
+        shutil.copyfile(os.path.join(self.model.trainer.save_dir, 'weights', 'last.pt'),
                         os.path.join(fine_tuned_dir, 'last.pt'))
         print('Best and last models were copied correctly to yolo_models folder')
 
