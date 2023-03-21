@@ -38,7 +38,8 @@ class Trainer(BaseBin):
                          epochs=epochs,
                          device=device,
                          save=True,
-                         save_period=1)
+                         save_period=1,
+                         workers=1)
         if val:
             self.model.val()
         return self.model
@@ -54,8 +55,10 @@ class Trainer(BaseBin):
                                       'yolov{}{}'.format(self.version, self.size))
         if not os.path.exists(fine_tuned_dir):
             os.makedirs(fine_tuned_dir)
-            shutil.copyfile(os.path.join(self.model.trainer.save_dir, 'best.pt'),
-                            os.path.join(fine_tuned_dir, 'best.pt'))
-            shutil.copyfile(os.path.join(self.model.trainer.save_dir, 'last.pt'),
-                            os.path.join(fine_tuned_dir, 'last.pt'))
+        print('Copying best and last models to yolo_models folder...')
+        shutil.copyfile(os.path.join(self.model.trainer.save_dir, 'best.pt'),
+                        os.path.join(fine_tuned_dir, 'best.pt'))
+        shutil.copyfile(os.path.join(self.model.trainer.save_dir, 'last.pt'),
+                        os.path.join(fine_tuned_dir, 'last.pt'))
+        print('Best and last models were copied correctly to yolo_models folder')
 
