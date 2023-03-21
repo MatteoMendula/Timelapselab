@@ -4,8 +4,8 @@ datasets
 documents
 *.jpg
 .DS_Store
-ByteTrack
-ByteTrack/requirements.txt
+#ByteTrack
+#ByteTrack/requirements.txt
 
 .idea
 
