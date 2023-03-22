@@ -9,7 +9,7 @@ def main():
                          dataset_name='timelapse',
                          reid_weights='reid_models/pretrained/osnet_x0_25_msmt17.pt',
                          tracking_method=settings.tracking_method,
-                         classes_to_track=settings.classes,
+                         classes_to_track=settings.classes_to_track,
                          imgsz=settings.img_size,
                          conf_thres=settings.conf_thres,
                          iou_thres=settings.iou_thres,
