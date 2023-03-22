@@ -307,7 +307,7 @@ class Tracker(BaseBin):
                         n = (det[:, 5] == pred_class).sum()  # detections per class
                         s += f"{n} {self.class_names[int(pred_class)]}{'s' * (n > 1)}, "  # add to string
 
-                blurred_image = Tracker.blur_faces(imc, det)
+                blurred_image = self.blur_faces(imc, det)
                 self.annotator = Annotator(blurred_image, line_width=line_thickness, example=str(self.class_names))
 
                 if det is not None and len(det):
@@ -418,15 +418,15 @@ class Tracker(BaseBin):
                                                               save_dir=self.save_dir,
                                                               p=p)
 
-    @staticmethod
-    def blur_faces(initial_image, predictions):
+    def blur_faces(self, initial_image, predictions):
         boxes = predictions[:, :4]
         classes = predictions[:, -1]
         image = copy.deepcopy(initial_image)
         for index, box in enumerate(boxes):
             cls = int(classes[index])
-            if cls == 2:
-                image = Detector.blur_face(image, box.squeeze().cpu().detach().numpy())
+            print(f'self.class_names: {self.class_names}')
+            if self.class_names[cls] == 'Face':
+                image = Detector.blur_face(image, box.squeeze().cpu().detach().numpy(), mode='xyxy')
         return image
 
     @staticmethod

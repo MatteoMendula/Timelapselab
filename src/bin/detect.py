@@ -43,12 +43,20 @@ class Detector(BaseBin):
         return image
 
     @staticmethod
-    def blur_face(image, face_box):
+    def blur_face(image, face_box, mode='xywh'):
         h, w = image.shape[:2]
         kernel_width = (w // 7) | 1
         kernel_height = (h // 7) | 1
-        x, y, w, h = int(face_box[0]), int(face_box[1]), int(face_box[2]), int(face_box[3])
-        face_roi = image[y:y + h, x:x + w]
-        blurred_face = cv2.GaussianBlur(face_roi, (kernel_width, kernel_height), 0)
-        image[y:y + h, x:x + w] = blurred_face
+        if mode == 'xywh':
+            x, y, w, h = int(face_box[0]), int(face_box[1]), int(face_box[2]), int(face_box[3])
+            face_roi = image[y:y + h, x:x + w]
+            blurred_face = cv2.GaussianBlur(face_roi, (kernel_width, kernel_height), 0)
+            image[y:y + h, x:x + w] = blurred_face
+        elif mode == 'xyxy':
+            x1, y1, x2, y2 = int(face_box[0]), int(face_box[1]), int(face_box[2]), int(face_box[3])
+            face_roi = image[y1:y2, x1:x2]
+            blurred_face = cv2.GaussianBlur(face_roi, (kernel_width, kernel_height), 0)
+            image[y1:y2, x1:x2] = blurred_face
+        else:
+            raise ValueError('Mode \'{}\' not available in blur_face method!'.format(mode))
         return image
