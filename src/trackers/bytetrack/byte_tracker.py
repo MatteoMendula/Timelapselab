@@ -6,12 +6,12 @@ import copy
 import torch
 import torch.nn.functional as F
 
-from yolov8.ultralytics.yolo.utils.ops import xywh2xyxy, xyxy2xywh
+from ultralytics.yolo.utils.ops import xywh2xyxy, xyxy2xywh
 
 
-from trackers.bytetrack.kalman_filter import KalmanFilter
-from trackers.bytetrack import matching
-from trackers.bytetrack.basetrack import BaseTrack, TrackState
+from src.trackers.bytetrack.kalman_filter import KalmanFilter
+from src.trackers.bytetrack import matching
+from src.trackers.bytetrack.basetrack import BaseTrack, TrackState
 
 class STrack(BaseTrack):
     shared_kalman = KalmanFilter()

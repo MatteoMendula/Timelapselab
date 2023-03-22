@@ -9,6 +9,7 @@ class Detector(BaseBin):
                  size: str = 's',
                  dataset_name: str = 'timelapse'):
         super().__init__(version=version, size=size, dataset_name=dataset_name)
+        self.name = '{}/yolov{}{}'.format(self.dataset_name, self.version, self.size)
         self.load_best_model()
         self.model.add_callback("on_predict_postprocess_end", Detector.on_predict_postprocess_end)
 

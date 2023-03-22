@@ -7,7 +7,7 @@ def main():
     Detector(version=settings.version,
              size=settings.size,
              dataset_name='timelapse').detect(
-        source='datasets/timelapse/test/images',
+        source='0', # 'datasets/timelapse/test/images',
         imgsz=settings.img_size,
         device=settings.device,
         save=True)

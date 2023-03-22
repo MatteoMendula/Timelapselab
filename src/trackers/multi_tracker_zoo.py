@@ -1,4 +1,5 @@
-from trackers.strongsort.utils.parser import get_config
+from src.trackers.strongsort.utils.parser import get_config
+
 
 def create_tracker(tracker_type, tracker_config, reid_weights, device, half):
     
@@ -6,7 +7,7 @@ def create_tracker(tracker_type, tracker_config, reid_weights, device, half):
     cfg.merge_from_file(tracker_config)
     
     if tracker_type == 'strongsort':
-        from trackers.strongsort.strong_sort import StrongSORT
+        from src.trackers.strongsort.strong_sort import StrongSORT
         strongsort = StrongSORT(
             reid_weights,
             device,
@@ -24,7 +25,7 @@ def create_tracker(tracker_type, tracker_config, reid_weights, device, half):
         return strongsort
     
     elif tracker_type == 'ocsort':
-        from trackers.ocsort.ocsort import OCSort
+        from src.trackers.ocsort.ocsort import OCSort
         ocsort = OCSort(
             det_thresh=cfg.ocsort.det_thresh,
             max_age=cfg.ocsort.max_age,
@@ -38,7 +39,7 @@ def create_tracker(tracker_type, tracker_config, reid_weights, device, half):
         return ocsort
     
     elif tracker_type == 'bytetrack':
-        from trackers.bytetrack.byte_tracker import BYTETracker
+        from src.trackers.bytetrack.byte_tracker import BYTETracker
         bytetracker = BYTETracker(
             track_thresh=cfg.bytetrack.track_thresh,
             match_thresh=cfg.bytetrack.match_thresh,
@@ -48,7 +49,7 @@ def create_tracker(tracker_type, tracker_config, reid_weights, device, half):
         return bytetracker
     
     elif tracker_type == 'botsort':
-        from trackers.botsort.bot_sort import BoTSORT
+        from src.trackers.botsort.bot_sort import BoTSORT
         botsort = BoTSORT(
             reid_weights,
             device,
@@ -65,7 +66,7 @@ def create_tracker(tracker_type, tracker_config, reid_weights, device, half):
         )
         return botsort
     elif tracker_type == 'deepocsort':
-        from trackers.deepocsort.ocsort import OCSort
+        from src.trackers.deepocsort.ocsort import OCSort
         botsort = OCSort(
             reid_weights,
             device,
