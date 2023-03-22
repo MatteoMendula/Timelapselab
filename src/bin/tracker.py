@@ -131,12 +131,13 @@ class Tracker(BaseBin):
 
     def load_detection_model(self):
         # Load model
-        self.yolo_model = AutoBackend(self.detector.yolo_weights_path, device=self.device, dnn=self.dnn, fp16=self.half)
-        # self.yolo_model = AutoBackend('yolo_models/pretrained/yolov8s.pt', device=self.device, dnn=self.dnn,
-        #                               fp16=self.half)
+        timelapse = False
+        if timelapse:
+            self.yolo_model = AutoBackend(self.detector.yolo_weights_path, device=self.device, dnn=self.dnn, fp16=self.half)
+        else:
+            self.yolo_model = AutoBackend('yolo_models/pretrained/yolov8s.pt', device=self.device, dnn=self.dnn,
+                                          fp16=self.half)
         self.stride, self.class_names, self.pt = self.yolo_model.stride, self.yolo_model.names, self.yolo_model.pt
-        # model = self.detector.model
-        # stride, class_names, pt = model.model.stride, model.model.class_names, model.model.model.pt
 
     def setup_stream(self, vid_stride: int = 1):
         # Dataloader
@@ -180,6 +181,13 @@ class Tracker(BaseBin):
                     self.tracker_list[pred_index].model.warmup()
         self.outputs = [None] * self.bs
 
+    def summarize_tracked_objects(self):
+        print('From last input source we tracked the following objects:')
+        for class_to_track in self.classes_to_track:
+            n_unique_objects = len(list(set(self.tracked_objects_dict[class_to_track])))
+            print(f"Class: {colorstr('bold', self.class_names[class_to_track])} -> "
+                  f"Tracked {colorstr('bold', n_unique_objects)} different objects/subjects")
+
     @torch.no_grad()
     def run(self,
             source='0',
@@ -204,12 +212,12 @@ class Tracker(BaseBin):
         # Setup detection model if not already setup
         if self.yolo_model is None:
             self.load_detection_model()
-
+        # Setup input stream and warmup detection model to get faster predictions
         self.setup_stream(vid_stride=vid_stride)
         self.warmup_detection_model()
-
+        # Setup tracker model and related fields
         self.setup_tracker()
-
+        # Start tracking from samples of the input
         self._track(save_vid=save_vid,
                     save_crop=save_crop,
                     save_trajectories=save_trajectories,
@@ -219,7 +227,7 @@ class Tracker(BaseBin):
                     hide_labels=hide_labels,
                     hide_conf=hide_conf,
                     hide_class=hide_class, )
-
+        # Print results corresponding to tracked objects in the input source
         self.print_results(save_vid=save_vid)
 
     def _track(self,
