@@ -26,5 +26,4 @@ cd ..
 cd Timelapselab
 sed -i 's/# tensorflow>=2.4.1/tensorflow>=2.4.1/g' requirements.txt
 sed -i 's/# tensorflowjs>=3.9.0/tensorflowjs>=3.9.0/g' requirements.txt
-sed -i 's/# openvino-dev/openvino-dev/g' requirements.txt
 python3.8 -m pip install -r requirements.txt
