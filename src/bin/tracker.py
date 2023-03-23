@@ -2,6 +2,7 @@ import copy
 import os
 import platform
 from pathlib import Path
+from typing import List, Tuple
 
 import cv2
 import torch
@@ -37,8 +38,8 @@ class Tracker(BaseBin):
                  device: str = '0',
                  half: bool = False,  # use FP16 half-precision inference
                  dnn: bool = False,  # use OpenCV DNN for ONNX inference
-                 imgsz: tuple[int] = (640, 640),
-                 classes_to_track: list[int] = None,
+                 imgsz: Tuple[int] = (640, 640),
+                 classes_to_track: List[int] = None,
                  conf_thres: float = 0.2,  # confidence threshold
                  iou_thres: float = 0.6,  # NMS IOU threshold
                  max_det: int = 1000,  # maximum detections per image
@@ -190,18 +191,18 @@ class Tracker(BaseBin):
 
     @torch.no_grad()
     def run(self,
-            source='0',
-            save_crop=False,  # save cropped prediction boxes
-            save_trajectories=False,  # save trajectories for each track
-            save_vid=False,  # save confidences in --save-txt labels
-            augment=False,  # augmented inference
-            visualize=False,  # visualize features
-            project='runs/track',  # save results to project/name
-            line_thickness=2,  # bounding box thickness (pixels)
-            hide_labels=False,  # hide labels
-            hide_conf=False,  # hide confidences
-            hide_class=False,  # hide IDs
-            vid_stride=1,  # video frame-rate stride
+            source: str = '0',
+            save_crop: bool = False,  # save cropped prediction boxes
+            save_trajectories: bool = False,  # save trajectories for each track
+            save_vid: bool = False,  # save confidences in --save-txt labels
+            augment: bool = False,  # augmented inference
+            visualize: bool = False,  # visualize features
+            project: str = 'runs/track',  # save results to project/name
+            line_thickness: int = 2,  # bounding box thickness (pixels)
+            hide_labels: bool = False,  # hide labels
+            hide_conf: bool = False,  # hide confidences
+            hide_class: bool = False,  # hide IDs
+            vid_stride: bool = 1,  # video frame-rate stride
             ):
         # Define source
         self.set_source(source)

@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 from .base import BaseBin
 
 
@@ -10,7 +10,7 @@ class Converter(BaseBin):
         super().__init__(version=version, size=size, dataset_name=dataset_name)
         self.load_best_model()
 
-    def convert_to(self, framework: Union[str, list[str]] = 'onnx'):
+    def convert_to(self, framework: Union[str, List[str]] = 'onnx'):
         if isinstance(framework, str):
             return self.model.export(format=framework)
         elif isinstance(framework, list):

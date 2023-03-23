@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 import os
 import shutil
 from ultralytics import YOLO
@@ -26,9 +26,9 @@ class Trainer(BaseBin):
 
     def run(self,
             batch_size: int = 64,
-            img_size: Union[int, list[int]] = 640,
+            img_size: Union[int, List[int]] = 640,
             epochs: int = 10,
-            device: Union[str, int, list[int]] = 0,
+            device: Union[str, int, List[int]] = 0,
             val: bool = True) -> YOLO:
         self.model.add_callback("on_fit_epoch_end", self.on_fit_epoch_end)
         print('\n\nimg_size: {}\n\n'.format(img_size))
