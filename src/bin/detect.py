@@ -7,10 +7,11 @@ class Detector(BaseBin):
     def __init__(self,
                  version: str = '8',
                  size: str = 's',
-                 dataset_name: str = 'timelapse'):
+                 dataset_name: str = 'timelapse',
+                 inference_mode: str = 'torch'):
         super().__init__(version=version, size=size, dataset_name=dataset_name)
         self.name = '{}/yolov{}{}'.format(self.dataset_name, self.version, self.size)
-        self.load_best_model()
+        self.load_best_model(inference_mode=inference_mode)
         self.model.add_callback("on_predict_postprocess_end", Detector.on_predict_postprocess_end)
 
     def detect(self, **args):

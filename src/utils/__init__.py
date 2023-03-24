@@ -1,4 +1,5 @@
 from .paths import *
+from .frameworks import *
 
 import argparse
 from pathlib import Path
@@ -17,6 +18,9 @@ def gather_settings():
     parser.add_argument('--resume', nargs='?', const=True, default=False, help='resume most recent training')
     parser.add_argument('--device', default='cpu', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--save_period', type=int, default=-1, help='Log model after every "save_period" epoch')
+
+    parser.add_argument('--inference_mode', type=str, default='torch',
+                        help='deeplearning framework to use for inference')
 
     parser.add_argument('--tracking_method', type=str, default='bytetrack',
                         help='deepocsort, botsort, strongsort, ocsort, bytetrack')

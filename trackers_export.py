@@ -20,8 +20,8 @@ import torch.backends.cudnn as cudnn
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0].parents[0]  # yolov5 strongsort root directory
-WEIGHTS = ROOT / 'weights'
+ROOT = FILE.parents[0]  # yolov5 strongsort root directory
+WEIGHTS = ROOT / 'reid_models/pretrained'
 
 
 if str(ROOT) not in sys.path:
@@ -281,7 +281,7 @@ if __name__ == "__main__":
     model.eval()
 
     if args.optimize:
-        assert device.type == 'cpu', '--optimize not compatible with cuda devices, i.e. use --device cpu'
+        assert args.device.type == 'cpu', '--optimize not compatible with cuda devices, i.e. use --device cpu'
     
     im = torch.zeros(args.batch_size, 3, args.imgsz[0], args.imgsz[1]).to(args.device)  # image size(1,3,640,480) BCHW iDetection
     for _ in range(2):

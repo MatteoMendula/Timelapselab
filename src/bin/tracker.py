@@ -15,8 +15,10 @@ from ultralytics.yolo.utils.files import increment_path
 from ultralytics.yolo.utils.ops import Profile, non_max_suppression, scale_boxes
 from ultralytics.yolo.utils.plotting import Annotator, colors, save_one_box
 from ultralytics.yolo.utils.torch_utils import select_device
+from ultralytics import YOLO
 
 from src.trackers.multi_tracker_zoo import create_tracker
+from src.utils import get_framework_extension
 from .base import BaseBin
 from .detect import Detector
 
@@ -33,8 +35,9 @@ class Tracker(BaseBin):
                  version: str = '8',
                  size: str = 's',
                  dataset_name: str = 'timelapse',
+                 inference_mode: str = 'torch',
                  tracking_method: str = 'strongsort',
-                 reid_weights: str = 'reid_models/pretrained/osnet_x0_25_msmt17.pt',
+                 reid_weights: str = 'reid_models/pretrained/osnet_x0_25_msmt17',
                  device: str = '0',
                  half: bool = False,  # use FP16 half-precision inference
                  dnn: bool = False,  # use OpenCV DNN for ONNX inference
@@ -51,7 +54,8 @@ class Tracker(BaseBin):
 
         self.yolo_model = None
         self.save_dir = None
-        self.detector = Detector(version=version, size=size, dataset_name=dataset_name)
+        self.inference_mode = inference_mode
+        self.detector = Detector(version=version, size=size, dataset_name=dataset_name, inference_mode=inference_mode)
 
         self.device = select_device(device)
         self.dnn = dnn
@@ -134,10 +138,19 @@ class Tracker(BaseBin):
         # Load model
         timelapse = False
         if timelapse:
-            self.yolo_model = AutoBackend(self.detector.yolo_weights_path, device=self.device, dnn=self.dnn, fp16=self.half)
+            self.yolo_model = AutoBackend(self.detector.yolo_weights_path,
+                                          device=self.device, dnn=self.dnn, fp16=self.half)
         else:
-            self.yolo_model = AutoBackend('yolo_models/pretrained/yolov8s.pt', device=self.device, dnn=self.dnn,
-                                          fp16=self.half)
+            try:
+                self.yolo_model = AutoBackend('yolo_models/pretrained/'
+                                              'yolov8s.{}'.format(get_framework_extension(self.inference_mode)),
+                                              device=self.device, dnn=self.dnn, fp16=self.half)
+            except:
+                self.model = YOLO('yolo_models/pretrained/yolov8s.pt')
+                self.model.export(format=self.inference_mode)
+                self.yolo_model = AutoBackend('yolo_models/pretrained/'
+                                              'yolov8s.{}'.format(get_framework_extension(self.inference_mode)),
+                                              device=self.device)  # , dnn=self.dnn, fp16=self.half)
         self.stride, self.class_names, self.pt = self.yolo_model.stride, self.yolo_model.names, self.yolo_model.pt
 
     def setup_stream(self, vid_stride: int = 1):
@@ -174,8 +187,17 @@ class Tracker(BaseBin):
         self.tracking_config = 'src/trackers/{}/configs/{}.yaml'.format(self.tracking_method, self.tracking_method)
         self.tracker_list = []
         for pred_index in range(self.bs):
-            tracker = create_tracker(self.tracking_method, self.tracking_config, self.reid_weights, self.device,
-                                     self.half)
+            if not os.path.exists('{}.{}'.format(self.reid_weights, get_framework_extension(self.inference_mode))):
+                import subprocess
+                command = 'python trackers_export.py --weights=\'{}\' --include {} ' \
+                          '--device \'{}\' --batch-size 1' \
+                          ' --dynamic'.format('{}.pt'.format(self.reid_weights),
+                                              get_framework_extension(self.inference_mode),
+                                              self.device)
+                subprocess.run(command, shell=True)
+            tracker = create_tracker(self.tracking_method, self.tracking_config,
+                                     '{}.{}'.format(self.reid_weights, get_framework_extension(self.inference_mode)),
+                                     self.device, self.half)
             self.tracker_list.append(tracker, )
             if hasattr(self.tracker_list[pred_index], 'model'):
                 if hasattr(self.tracker_list[pred_index].model, 'warmup'):

@@ -14,6 +14,7 @@ class Trainer(BaseBin):
         super().__init__(version=version, size=size, dataset_name=dataset_name)
         self.dataset_path = dataset_path
         self.setup_model()
+        self.img_size = None
 
     def setup_model(self,
                     pretrained: bool = True):
@@ -30,6 +31,7 @@ class Trainer(BaseBin):
             epochs: int = 10,
             device: Union[str, int, List[int]] = 0,
             val: bool = True) -> YOLO:
+        self.img_size = img_size
         self.model.add_callback("on_fit_epoch_end", self.on_fit_epoch_end)
         print('\n\nimg_size: {}\n\n'.format(img_size))
         self.model.train(data=self.dataset_path,
@@ -62,3 +64,13 @@ class Trainer(BaseBin):
                         os.path.join(fine_tuned_dir, 'last.pt'))
         print('Best and last models were copied correctly to yolo_models folder')
 
+    def export(self, framework: Union[str, List[str]] = 'onnx'):
+        self.load_best_model()
+        if isinstance(framework, str):
+            return self.model.export(format=framework,
+                                     imgsz=self.img_size)
+        elif isinstance(framework, list):
+            return {frame: self.model.export(format=frame,
+                                             imgsz=self.img_size) for frame in framework}
+        else:
+            raise ValueError('Cannot convert to framework having type \'{}\'!'.format(type(framework)))
