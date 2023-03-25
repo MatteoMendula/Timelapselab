@@ -62,3 +62,6 @@ filterpy
 # plotly                    # for hp importance and pareto front plots
 # kaleido
 # joblib
+
+# Package for accessing rtsp server
+rtsp
