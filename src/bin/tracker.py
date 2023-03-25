@@ -3,6 +3,7 @@ import os
 import platform
 from pathlib import Path
 from typing import List, Tuple
+import datetime
 
 import cv2
 import torch
@@ -39,6 +40,7 @@ class Tracker(BaseBin):
                  tracking_method: str = 'strongsort',
                  reid_weights: str = 'reid_models/pretrained/osnet_x0_25_msmt17',
                  device: str = '0',
+                 timer_mode: str = 'minutes',
                  half: bool = False,  # use FP16 half-precision inference
                  dnn: bool = False,  # use OpenCV DNN for ONNX inference
                  imgsz: Tuple[int] = (640, 640),
@@ -116,6 +118,9 @@ class Tracker(BaseBin):
         self.tracked_objects_dict = None
         self.define_tracked_dict()
 
+        self.timer_mode = timer_mode
+        self.timer_initial_setting = None
+
     def define_tracked_dict(self):
         self.tracked_objects_dict = {}
         for class_to_track in self.classes_to_track:
@@ -150,7 +155,7 @@ class Tracker(BaseBin):
                 self.model.export(format=self.inference_mode)
                 self.yolo_model = AutoBackend('yolo_models/pretrained/'
                                               'yolov8s.{}'.format(get_framework_extension(self.inference_mode)),
-                                              device=self.device)  # , dnn=self.dnn, fp16=self.half)
+                                              device=self.device, dnn=self.dnn, fp16=self.half)
         self.stride, self.class_names, self.pt = self.yolo_model.stride, self.yolo_model.names, self.yolo_model.pt
 
     def setup_stream(self, vid_stride: int = 1):
@@ -211,12 +216,61 @@ class Tracker(BaseBin):
             print(f"Class: {colorstr('bold', self.class_names[class_to_track])} -> "
                   f"Tracked {colorstr('bold', n_unique_objects)} different objects/subjects")
 
+    def log_statistics(self):
+        log_dir = os.path.join(self.save_dir, 'statistics')
+        log_file = os.path.join(log_dir, 'tracked_objects.txt')
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        if not os.path.exists(log_file):
+            with open(log_file, 'w') as f:
+                self.write_tracked_in_file(f)
+        else:
+            with open(log_file, 'a') as f:
+                self.write_tracked_in_file(f)
+
+    def write_tracked_in_file(self, f):
+        f.write('Objects tracked between {} and {} '
+                'are the following:\n'.format(self.timer_initial_setting.strftime("%d-%m-%y %H:%M:%S"),
+                                            datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S")))
+        for class_to_track in self.classes_to_track:
+            n_unique_objects = len(list(set(self.tracked_objects_dict[class_to_track])))
+            f.write(f"Class: {colorstr('bold', self.class_names[class_to_track])} -> "
+                    f"Tracked {colorstr('bold', n_unique_objects)} different objects/subjects\n")
+        f.write('\n\n')
+
+    def setup_timer(self):
+        now = datetime.datetime.now()
+        self.timer_initial_setting = now
+
+    def check_time(self, summary_period):
+        now = datetime.datetime.now()
+        if self.timer_mode == 'minutes':
+            eta = self.timer_initial_setting + datetime.timedelta(minutes=1)
+        elif self.timer_mode == 'hours':
+            eta = self.timer_initial_setting + datetime.timedelta(hours=1)
+        elif self.timer_mode == 'days':
+            eta = self.timer_initial_setting + datetime.timedelta(days=1)
+        elif self.timer_mode == 'weeks':
+            eta = self.timer_initial_setting + datetime.timedelta(weeks=1)
+        elif self.timer_mode == 'months':
+            raise NotImplementedError('Months as tracking period is not yet available!')
+        else:
+            raise ValueError('Invalid timer mode \'{}\''.format(self.timer_mode))
+        print('eta: {}'.format(eta.strftime("%d-%m-%y %H:%M:%S")))
+        print('now: {}'.format(now.strftime("%d-%m-%y %H:%M:%S")))
+        print('eta <= now: {}'.format(eta <= now))
+        if eta <= now:
+            return True
+        else:
+            return False
+
     @torch.no_grad()
     def run(self,
             source: str = '0',
             save_crop: bool = False,  # save cropped prediction boxes
             save_trajectories: bool = False,  # save trajectories for each track
             save_vid: bool = False,  # save confidences in --save-txt labels
+            summary_period: int = 1,
             augment: bool = False,  # augmented inference
             visualize: bool = False,  # visualize features
             project: str = 'runs/track',  # save results to project/name
@@ -238,25 +292,32 @@ class Tracker(BaseBin):
         # Setup input stream and warmup detection model to get faster predictions
         self.setup_stream(vid_stride=vid_stride)
         self.warmup_detection_model()
-        # Setup tracker model and related fields
-        self.setup_tracker()
-        # Start tracking from samples of the input
-        self._track(save_vid=save_vid,
-                    save_crop=save_crop,
-                    save_trajectories=save_trajectories,
-                    augment=augment,
-                    visualize=visualize,
-                    line_thickness=line_thickness,
-                    hide_labels=hide_labels,
-                    hide_conf=hide_conf,
-                    hide_class=hide_class, )
-        # Print results corresponding to tracked objects in the input source
-        self.print_results(save_vid=save_vid)
+
+        stop = False
+        while not stop:
+            self.reset_tracked_dict()
+            self.setup_timer()
+            # Setup tracker model and related fields
+            self.setup_tracker()
+            # Start tracking from samples of the input
+            self._track(save_vid=save_vid,
+                        save_crop=save_crop,
+                        save_trajectories=save_trajectories,
+                        summary_period=summary_period,
+                        augment=augment,
+                        visualize=visualize,
+                        line_thickness=line_thickness,
+                        hide_labels=hide_labels,
+                        hide_conf=hide_conf,
+                        hide_class=hide_class, )
+            # Print results corresponding to tracked objects in the input source
+            self.print_results(save_vid=save_vid)
 
     def _track(self,
                save_crop: bool = False,  # save cropped prediction boxes
                save_vid: bool = False,  # save confidences in --save-txt labels
                save_trajectories: bool = False,
+               summary_period: int = 1,
                augment: bool = False,  # augmented inference
                visualize: bool = False,  # visualize features
                line_thickness: int = 2,  # bounding box thickness (pixels)
@@ -372,6 +433,10 @@ class Tracker(BaseBin):
                                     save_path=save_path)
 
                 self.prev_frames[pred_index] = self.curr_frames[pred_index]
+
+            if self.check_time(summary_period=summary_period):
+                self.log_statistics()
+                break
 
             # Print total time (preprocessing + inference + NMS + tracking)
             LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}"

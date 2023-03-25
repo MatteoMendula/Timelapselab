@@ -49,5 +49,9 @@ def gather_settings():
     parser.add_argument('--half', action='store_true', help='use FP16 half-precision inference')
     parser.add_argument('--dnn', action='store_true', help='use OpenCV DNN for ONNX inference')
     parser.add_argument('--vid_stride', type=int, default=1, help='video frame-rate stride')
+
+    parser.add_argument('--timer_mode', type=str, default='minutes',
+                        help='track every minute, hour, day or week')
+
     opt = parser.parse_args()
     return opt
