@@ -1,9 +1,10 @@
-import os
 from src.bin import Trainer
 from src.utils import gather_settings
+import torch
 
+import os
+# os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:200'
 
-os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:512'
 
 def main():
     settings = gather_settings()
@@ -16,4 +17,6 @@ def main():
 
 
 if __name__ == '__main__':
+    print("matte", torch.cuda.is_available())
+    print("matte 2", torch.cuda.device_count())
     main()

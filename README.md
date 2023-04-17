@@ -13,4 +13,4 @@ python track.py --tracking_source='rtsp://admin:Mp010201@10.111.45.211:554/Strea
 - `--tracking_method`: defines the sota approach used to track objects. It could be either 'bytetrack' (preferred), 'strongsort', 'ocsort', 'botsort' or 'deepocsort'.
 - `--save_vid`: if passed saves a video of tracked objects into experiments directory.
 - `--save_crop`: if passed saves a copy of each object tracked for each video frame cropped around its detection area.
-- `--inference_mode`: defines the mode (deeplearning library) used for inference. This was tested only with 'torch' and 'onnx' at the moment.# Timelapselab
+- `--inference_mode`: defines the mode (deeplearning library) used for inference. This was tested only with 'torch' and 'onnx' at the moment.
