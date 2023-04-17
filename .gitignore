@@ -1,7 +1,6 @@
 runs
 yolo_models
 reid_models
-datasets
 documents
 *.jpg
 .DS_Store

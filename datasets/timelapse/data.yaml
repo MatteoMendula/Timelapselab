@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 9
+names: ['Aerial platforms', 'Cars', 'Face', 'Helmets', 'Orange-yellow protective jackets', 'Person', 'Trucks', 'Vehicle-s plates', 'excavator']
+
+roboflow:
+  workspace: timelapselab
+  project: worksite-obj-det
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/timelapselab/worksite-obj-det/dataset/1
